@@ -8,8 +8,9 @@ extern "C" {
 #include "main.h"
 #include "queue.h"
 
+#define RX_SIZE 500
 extern UART_HandleTypeDef huart1;
-
+extern uint8_t fetch_buffer[2048];
 extern pQueue data_queue;
 
 void MX_USART1_UART_Init(void);

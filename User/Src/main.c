@@ -7,6 +7,10 @@
 
 int main(void)
 {
+    // for clion debug
+    // __HAL_RCC_HSI_ENABLE(); // 启用 HSI
+    // __HAL_RCC_SYSCLK_CONFIG(RCC_SYSCLKSOURCE_HSI); // 切换系统时钟为 HSI
+
     HAL_Init();
     SystemClock_Config();
 
@@ -16,15 +20,20 @@ int main(void)
 
     while (1)
     {
-        HAL_GPIO_TogglePin(LED_SIG_PORT, LED_SIG_PIN);
-        HAL_Delay(500);
+        // HAL_GPIO_TogglePin(LED_SIG_PORT, LED_SIG_PIN);
+        // HAL_Delay(10);
 
-        uint16_t len = length((data_queue));
+        DISABLE_INT();
+        uint16_t len = length(data_queue);
+        ENABLE_INT();
 
         if (len > 0)
         {
-            uint8_t* data = fetch(data_queue, len);
-            HAL_UART_Transmit_IT(&huart1, data, len); // 非阻塞发送，发送完成后进入中断回调函数
+            DISABLE_INT();
+            fetch(data_queue, len, fetch_buffer);
+            ENABLE_INT();
+
+            HAL_UART_Transmit_IT(&huart1, fetch_buffer, len); // 非阻塞发送，发送完成后进入中断回调函数
         }
     }
 }

@@ -1,33 +1,12 @@
-/* USER CODE BEGIN Header */
-/**
-  ******************************************************************************
-  * @file    usart.c
-  * @brief   This file provides code for the configuration
-  *          of the USART instances.
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2025 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
-
 #include "usart.h"
 
-#include <string.h>
-
 UART_HandleTypeDef huart1;
+uint8_t fetch_buffer[2048];
 
-#define RX_SIZE 10
-static uint8_t rx_buffer[256];
-
-static uint8_t buffer[2048];
+static uint8_t rx_buffer[RX_SIZE];
+static uint8_t queue_buffer[2048];
 static CharQueue _data_queue;
+
 pQueue data_queue;
 
 /* USART1 init function */
@@ -46,10 +25,10 @@ void MX_USART1_UART_Init(void)
         Error_Handler();
     }
 
-    char_queue(&_data_queue, buffer, ARRAY_SIZE(buffer));
+    char_queue(&_data_queue, queue_buffer, ARRAY_SIZE(queue_buffer), 0);
     data_queue = (pQueue)&_data_queue;
 
-    HAL_UARTEx_ReceiveToIdle_IT(&huart1, rx_buffer, RX_SIZE);
+    HAL_UARTEx_ReceiveToIdle_IT(&huart1, rx_buffer, sizeof(rx_buffer));
 }
 
 void HAL_UART_MspInit(UART_HandleTypeDef *uartHandle)
@@ -73,7 +52,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef *uartHandle)
         HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
         // 开总中断
-        HAL_NVIC_SetPriority(USART1_IRQn, 1, 0);
+        HAL_NVIC_SetPriority(USART1_IRQn, 0, 0);
         HAL_NVIC_EnableIRQ(USART1_IRQn);
     }
 }
@@ -97,7 +76,12 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 {
     if (huart->Instance == USART1)
     {
-        pushn(data_queue, rx_buffer, Size);
+        uint16_t p_size = pushn(data_queue, rx_buffer, Size);
+
+        if (p_size != Size && !is_cover(data_queue))
+        {
+            Error_Handler();
+        }
 
         // 重新开中断
         HAL_UARTEx_ReceiveToIdle_IT(&huart1, rx_buffer, RX_SIZE);
@@ -108,7 +92,7 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
     if (huart->Instance == USART1)
     {
-        // printf("\nSent successfully.\n");
+
     }
 }
 
