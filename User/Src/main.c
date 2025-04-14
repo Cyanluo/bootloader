@@ -33,7 +33,7 @@ int main(void)
             fetch(data_queue, len, fetch_buffer);
             ENABLE_INT();
 
-            HAL_UART_Transmit_IT(&huart1, fetch_buffer, len); // 非阻塞发送，发送完成后进入中断回调函数
+            HAL_UART_Transmit_DMA(&huart1, fetch_buffer, len); // 非阻塞发送，发送完成后进入中断回调函数
         }
     }
 }
