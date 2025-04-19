@@ -5,8 +5,8 @@
 extern "C" {
 #endif
 
-#include "main.h"
-#include "queue.h"
+#include <main.h>
+#include <queue.h>
 
 #define RX_SIZE 500
 extern UART_HandleTypeDef huart1;

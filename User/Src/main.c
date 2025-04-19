@@ -2,26 +2,53 @@
 
 #include <string.h>
 
-#include "usart.h"
-#include "gpio.h"
+#include <usart.h>
+#include <led.h>
+#include <usr_sleep.h>
+#include <at24c02.h>
 
 int main(void)
 {
     // for clion debug
-    // __HAL_RCC_HSI_ENABLE(); // 启用 HSI
-    // __HAL_RCC_SYSCLK_CONFIG(RCC_SYSCLKSOURCE_HSI); // 切换系统时钟为 HSI
+    __HAL_RCC_HSI_ENABLE(); // 启用 HSI
+    __HAL_RCC_SYSCLK_CONFIG(RCC_SYSCLKSOURCE_HSI); // 切换系统时钟为 HSI
 
     HAL_Init();
     SystemClock_Config();
+    init_fac_us();
 
     MX_GPIO_Init();
     MX_USART1_UART_Init();
     RetargetInit(&huart1);
+    at24c02_init();
+
+    HAL_Delay(2000);
+
+    uint8_t at24c02_test_buff[256] = {0};
+    uint8_t ret = 0;
+
+    for (uint16_t i = 0; i < 256; i++)
+    {
+        at24c02_test_buff[i] = i;
+    }
+
+    ret = at24c02_write_bytes(0, at24c02_test_buff, 256);
+    if (ret != 0)
+        Error_Handler();
+
+    ret = at24c02_read_bytes(0, at24c02_test_buff, 256);
+    if (ret != 0)
+        Error_Handler();
+
+    for (uint16_t i = 0; i <= 255; i++)
+    {
+        printf("addr i:%d\n", at24c02_test_buff[i]);
+    }
 
     while (1)
     {
-        // HAL_GPIO_TogglePin(LED_SIG_PORT, LED_SIG_PIN);
-        // HAL_Delay(10);
+        HAL_GPIO_TogglePin(LED_SIG_PORT, LED_SIG_PIN);
+        usleep(1000000);
 
         DISABLE_INT();
         uint16_t len = length(data_queue);
