@@ -6,6 +6,7 @@
 #include <led.h>
 #include <usr_sleep.h>
 #include <at24c02.h>
+#include <w25q128.h>
 
 int main(void)
 {
@@ -21,28 +22,26 @@ int main(void)
     MX_USART1_UART_Init();
     RetargetInit(&huart1);
     at24c02_init();
+    w25q128_init();
 
     HAL_Delay(2000);
 
-    uint8_t at24c02_test_buff[256] = {0};
-    uint8_t ret = 0;
-
+    uint8_t wdata[256] = {0};
+    uint8_t rdata[4096] = {0};
     for (uint16_t i = 0; i < 256; i++)
     {
-        at24c02_test_buff[i] = i;
+        wdata[i] = i;
     }
-
-    ret = at24c02_write_bytes(0, at24c02_test_buff, 256);
-    if (ret != 0)
-        Error_Handler();
-
-    ret = at24c02_read_bytes(0, at24c02_test_buff, 256);
-    if (ret != 0)
-        Error_Handler();
-
-    for (uint16_t i = 0; i <= 255; i++)
+    w25q128_sector_erase(0);
+    for (uint16_t i = 0; i < 16; i++)
     {
-        printf("addr i:%d\n", at24c02_test_buff[i]);
+        w25q128_write_page(i, wdata);
+    }
+    w25q128_read(0, rdata, 4096);
+
+    for (uint32_t i = 0; i < 4096; i++)
+    {
+        printf("%d:%d \n", i, rdata[i]);
     }
 
     while (1)
