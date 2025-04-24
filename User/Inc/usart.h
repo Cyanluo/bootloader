@@ -15,7 +15,7 @@ extern pQueue data_queue;
 extern DMA_HandleTypeDef hdma_usart1_rx;
 extern DMA_HandleTypeDef hdma_usart1_tx;
 
-void MX_USART1_UART_Init(void);
+void uart1_init(void);
 
 #ifdef __cplusplus
 }

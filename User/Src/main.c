@@ -5,8 +5,7 @@
 #include <usart.h>
 #include <led.h>
 #include <usr_sleep.h>
-#include <at24c02.h>
-#include <w25q128.h>
+#include <boot.h>
 
 int main(void)
 {
@@ -18,49 +17,39 @@ int main(void)
     SystemClock_Config();
     init_fac_us();
 
-    MX_GPIO_Init();
-    MX_USART1_UART_Init();
+    led_init();
+    uart1_init();
     RetargetInit(&huart1);
-    at24c02_init();
-    w25q128_init();
+    boot_init();
 
     HAL_Delay(2000);
 
-    uint8_t wdata[256] = {0};
-    uint8_t rdata[4096] = {0};
-    for (uint16_t i = 0; i < 256; i++)
-    {
-        wdata[i] = i;
-    }
-    w25q128_sector_erase(0);
-    for (uint16_t i = 0; i < 16; i++)
-    {
-        w25q128_write_page(i, wdata);
-    }
-    w25q128_read(0, rdata, 4096);
+    BootFlags boot_flag = get_boot_flag();
 
-    for (uint32_t i = 0; i < 4096; i++)
+    if (boot_flag.OAT_FLAG == OAT_FLAG_VAL)
     {
-        printf("%d:%d \n", i, rdata[i]);
+        printf("Booting OAT\n");
     }
+    else
+    {
+        printf("Normal boot\n");
+
+        boot_flag.OAT_FLAG = OAT_FLAG_VAL;
+        set_boot_flag(&boot_flag);
+    }
+
+    printf("OTA_FLAG:0x%08x\n", boot_flag.OAT_FLAG);
+    printf("SECTION_B_START_SECTOR:%d\n",   SECTION_B_START_SECTOR);
+    printf("SECTION_B_SECTOR_NUM:%d\n",     SECTION_B_SECTOR_NUM);
+    printf("SECTION_B_START_ADDR:0x%08x\n",     SECTION_B_START_ADDR);
+    printf("SECTION_A_START_SECTOR:%d\n",   SECTION_A_START_SECTOR);
+    printf("SECTION_A_SECTOR_NUM:%d\n",     SECTION_A_SECTOR_NUM);
+    printf("SECTION_A_START_ADDR:0x%08x\n",     SECTION_A_START_ADDR);
 
     while (1)
     {
         HAL_GPIO_TogglePin(LED_SIG_PORT, LED_SIG_PIN);
         usleep(1000000);
-
-        DISABLE_INT();
-        uint16_t len = length(data_queue);
-        ENABLE_INT();
-
-        if (len > 0)
-        {
-            DISABLE_INT();
-            fetch(data_queue, len, fetch_buffer);
-            ENABLE_INT();
-
-            HAL_UART_Transmit_DMA(&huart1, fetch_buffer, len); // 非阻塞发送，发送完成后进入中断回调函数
-        }
     }
 }
 

@@ -12,7 +12,6 @@ extern "C" {
 #define DISABLE_INT() __set_PRIMASK(1) // 禁止全局中断
 
 void Error_Handler(void);
-
 void SystemClock_Config(void);
 
 #ifdef __cplusplus

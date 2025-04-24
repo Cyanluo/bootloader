@@ -21,7 +21,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "led.h"
 
-void MX_GPIO_Init(void)
+void led_init(void)
 {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
 

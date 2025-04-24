@@ -10,7 +10,7 @@ extern "C" {
 #define LED_SIG_PORT  GPIOF
 #define LED_SIG_PIN   GPIO_PIN_9
 
-void MX_GPIO_Init(void);
+void led_init(void);
 
 #ifdef __cplusplus
 }

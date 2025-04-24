@@ -13,7 +13,7 @@ static CharQueue _data_queue;
 pQueue data_queue;
 
 /* USART1 init function */
-void MX_USART1_UART_Init(void)
+void uart1_init(void)
 {
 	huart1.Instance = USART1;
 	huart1.Init.BaudRate = 921600;
