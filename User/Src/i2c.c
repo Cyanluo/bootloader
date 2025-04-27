@@ -18,6 +18,13 @@ void i2c_init(void)
 	I2C_SDA_H();
 }
 
+void i2c_de_init(void)
+{
+	HAL_GPIO_DeInit(I2C_SCL_GPIO_PORT, I2C_SCL_Pin);
+	HAL_GPIO_DeInit(I2C_SDA_GPIO_PORT, I2C_SDA_Pin);
+	I2C_CLOCK_DISABLE();
+}
+
 void i2c_start(void)
 {
 	I2C_SCL_H();

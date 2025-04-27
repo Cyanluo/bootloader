@@ -24,6 +24,11 @@ void spi_init(void)
 	}
 }
 
+void spi_de_init(void)
+{
+	HAL_SPI_DeInit(&spi1);
+}
+
 void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
 {
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -49,5 +54,16 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
 		GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 		GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 		HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+	}
+}
+
+void HAL_SPI_MspDeInit(SPI_HandleTypeDef *hspi)
+{
+	if(hspi->Instance == SPI1)
+	{
+		__HAL_RCC_SPI1_CLK_DISABLE();
+		__HAL_RCC_GPIOB_CLK_DISABLE();
+		HAL_GPIO_DeInit(GPIOB, GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5);
+		HAL_GPIO_DeInit(GPIOB, GPIO_PIN_14);
 	}
 }

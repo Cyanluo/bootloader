@@ -6,6 +6,7 @@
 #include <led.h>
 #include <usr_sleep.h>
 #include <boot.h>
+#include <w25q128.h>
 
 int main(void)
 {
@@ -22,8 +23,6 @@ int main(void)
     RetargetInit(&huart1);
     boot_init();
 
-    HAL_Delay(2000);
-
     BootFlags boot_flag = get_boot_flag();
 
     if (boot_flag.OAT_FLAG == OAT_FLAG_VAL)
@@ -34,16 +33,16 @@ int main(void)
     {
         printf("Normal boot\n");
 
-        boot_flag.OAT_FLAG = OAT_FLAG_VAL;
-        set_boot_flag(&boot_flag);
+        system_reset();
+        load_a_section(SECTION_A_START_ADDR);
     }
 
-    printf("OTA_FLAG:0x%08x\n", boot_flag.OAT_FLAG);
-    printf("SECTION_B_START_SECTOR:%d\n",   SECTION_B_START_SECTOR);
-    printf("SECTION_B_SECTOR_NUM:%d\n",     SECTION_B_SECTOR_NUM);
+    printf("OTA_FLAG:0x%08x\n",                 boot_flag.OAT_FLAG);
+    printf("SECTION_B_START_SECTOR:%d\n",       SECTION_B_START_SECTOR);
+    printf("SECTION_B_SECTOR_NUM:%d\n",         SECTION_B_SECTOR_NUM);
     printf("SECTION_B_START_ADDR:0x%08x\n",     SECTION_B_START_ADDR);
-    printf("SECTION_A_START_SECTOR:%d\n",   SECTION_A_START_SECTOR);
-    printf("SECTION_A_SECTOR_NUM:%d\n",     SECTION_A_SECTOR_NUM);
+    printf("SECTION_A_START_SECTOR:%d\n",       SECTION_A_START_SECTOR);
+    printf("SECTION_A_SECTOR_NUM:%d\n",         SECTION_A_SECTOR_NUM);
     printf("SECTION_A_START_ADDR:0x%08x\n",     SECTION_A_START_ADDR);
 
     while (1)
@@ -92,6 +91,15 @@ void SystemClock_Config(void)
     {
         Error_Handler();
     }
+}
+
+void system_reset(void)
+{
+    led_de_init();
+    at24c02_de_init();
+    w25q128_de_init();
+    uart1_de_init();
+    HAL_DeInit();
 }
 
 void Error_Handler(void)

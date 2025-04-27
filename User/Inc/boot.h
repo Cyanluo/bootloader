@@ -2,6 +2,7 @@
 #define BOOT_H
 
 #include <fmc.h>
+#include <at24c02.h>
 
 /*
 	Flash 分为 A、B 区
@@ -17,7 +18,12 @@
 #define SECTION_A_SECTOR_NUM 		(FLASH_SECTOR_NUM - SECTION_B_SECTOR_NUM)
 #define SECTION_A_START_ADDR 		get_sector_addr(SECTION_A_START_SECTOR)
 
-#define	 OAT_FLAG_VAL	0x12345678
+#define RAM_START_ADDR				0x20000000
+#define RAM_END_ADDR 				0x20020000
+
+#define	 OAT_FLAG_VAL	0x11223344
+
+typedef void(*pf)(void);
 
 typedef struct
 {
@@ -27,5 +33,7 @@ typedef struct
 void boot_init(void);
 BootFlags get_boot_flag(void);
 void set_boot_flag(BootFlagsPtr boot_flag);
+void system_reset(void);
+void load_a_section(uint32_t addr);
 
 #endif //BOOT_H

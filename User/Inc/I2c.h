@@ -4,6 +4,7 @@
 #include "stm32f4xx_hal.h"
 
 #define I2C_CLOCK_ENABLE()		__HAL_RCC_GPIOB_CLK_ENABLE();
+#define I2C_CLOCK_DISABLE()		__HAL_RCC_GPIOB_CLK_DISABLE();
 #define I2C_SCL_GPIO_PORT		GPIOB
 #define I2C_SCL_Pin				GPIO_PIN_8
 #define I2C_SDA_GPIO_PORT		GPIOB
@@ -17,6 +18,7 @@
 #define READ_I2C_SDA() HAL_GPIO_ReadPin(I2C_SDA_GPIO_PORT, I2C_SDA_Pin)
 
 void i2c_init(void);
+void i2c_de_init(void);
 void i2c_start(void);
 void i2c_stop(void);
 void i2c_write_byte(uint8_t data);

@@ -7,6 +7,11 @@ void at24c02_init(void)
 	i2c_init();
 }
 
+void at24c02_de_init(void)
+{
+	i2c_de_init();
+}
+
 uint8_t at24c02_write_byte(uint8_t addr, uint8_t data)
 {
 	i2c_start();

@@ -16,6 +16,7 @@ extern DMA_HandleTypeDef hdma_usart1_rx;
 extern DMA_HandleTypeDef hdma_usart1_tx;
 
 void uart1_init(void);
+void uart1_de_init(void);
 
 #ifdef __cplusplus
 }

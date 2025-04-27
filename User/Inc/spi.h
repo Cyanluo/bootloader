@@ -7,5 +7,6 @@
 extern SPI_HandleTypeDef spi1;
 
 void spi_init(void);
+void spi_de_init(void);
 
 #endif //SPI_H

@@ -13,6 +13,7 @@ extern "C" {
 
 void Error_Handler(void);
 void SystemClock_Config(void);
+void system_reset(void);
 
 #ifdef __cplusplus
 }

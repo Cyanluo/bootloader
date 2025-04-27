@@ -9,6 +9,11 @@ void w25q128_init(void)
 	spi_init();
 }
 
+void w25q128_de_init(void)
+{
+	spi_de_init();
+}
+
 static void w25q128_busy(void)
 {
 	uint8_t cmd[] = {0x05, 0xFF};

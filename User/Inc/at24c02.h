@@ -7,6 +7,7 @@
 #define AT24C02_WADDR 0xA0
 
 void at24c02_init(void);
+void at24c02_de_init(void);
 uint8_t at24c02_write_byte(uint8_t addr, uint8_t data);
 uint8_t at24c02_write_bytes(uint8_t addr, uint8_t* data, uint16_t len);
 uint8_t at24c02_write_page(uint8_t addr, uint8_t *data);

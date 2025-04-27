@@ -1,4 +1,5 @@
 #include <usart.h>
+#include <led.h>
 
 UART_HandleTypeDef huart1;
 uint8_t fetch_buffer[2048];
@@ -32,6 +33,11 @@ void uart1_init(void)
 	data_queue = (pQueue) &_data_queue;
 
 	HAL_UARTEx_ReceiveToIdle_DMA(&huart1, rx_buffer, sizeof(rx_buffer));
+}
+
+void uart1_de_init(void)
+{
+	HAL_UART_DeInit(&huart1);
 }
 
 void HAL_UART_MspInit(UART_HandleTypeDef *uartHandle)
@@ -97,16 +103,29 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef *uartHandle)
 {
 	if (uartHandle->Instance == USART1)
 	{
+		HAL_DMA_Abort(&hdma_usart1_rx);
+		HAL_DMA_Abort(&hdma_usart1_tx);
+		HAL_UART_Abort(&huart1);
+
 		/* Peripheral clock disable */
 		__HAL_RCC_USART1_CLK_DISABLE();
+		__HAL_RCC_GPIOA_CLK_DISABLE();
+		__HAL_RCC_DMA2_CLK_DISABLE();
 
 		/**USART1 GPIO Configuration
 		PA9     ------> USART1_TX
 		PA10     ------> USART1_RX
 		*/
 		HAL_GPIO_DeInit(GPIOA, GPIO_PIN_9 | GPIO_PIN_10);
-		HAL_DMA_DeInit(&hdma_usart1_rx);
-		HAL_DMA_DeInit(&hdma_usart1_tx);
+
+		if (HAL_DMA_DeInit(&hdma_usart1_rx) != HAL_OK)
+		{
+			Error_Handler();
+		}
+		if (HAL_DMA_DeInit(&hdma_usart1_tx) != HAL_OK)
+		{
+			Error_Handler();
+		}
 	}
 }
 
