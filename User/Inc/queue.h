@@ -42,7 +42,6 @@ typedef struct
     uint8_t m_cover;
     queue_set m_set;
     queue_get m_get;
-    uint8_t m_lock;
     uint8_t* m_buffer;
 } CharQueue, *pCharQueue;
 

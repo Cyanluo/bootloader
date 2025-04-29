@@ -7,6 +7,7 @@
 #include <usr_sleep.h>
 #include <boot.h>
 #include <w25q128.h>
+#include <fsm.h>
 
 int main(void)
 {
@@ -18,24 +19,16 @@ int main(void)
     SystemClock_Config();
     init_fac_us();
 
+    fsm_init();
     led_init();
     uart1_init();
     RetargetInit(&huart1);
     boot_init();
 
-    BootFlags boot_flag = get_boot_flag();
-
-    if (boot_flag.OAT_FLAG == OAT_FLAG_VAL)
-    {
-        printf("Booting OAT\n");
-    }
-    else
-    {
-        printf("Normal boot\n");
-
-        system_reset();
-        load_a_section(SECTION_A_START_ADDR);
-    }
+    BootFlags boot_flag;
+    boot_flag.OAT_FLAG = OAT_FLAG_VAL;
+    set_boot_flag(&boot_flag);
+    boot_flag = get_boot_flag();
 
     printf("OTA_FLAG:0x%08x\n",                 boot_flag.OAT_FLAG);
     printf("SECTION_B_START_SECTOR:%d\n",       SECTION_B_START_SECTOR);
@@ -47,8 +40,8 @@ int main(void)
 
     while (1)
     {
-        HAL_GPIO_TogglePin(LED_SIG_PORT, LED_SIG_PIN);
-        usleep(1000000);
+        fsm_run();
+        usleep(10);
     }
 }
 

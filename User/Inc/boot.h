@@ -5,7 +5,7 @@
 #include <at24c02.h>
 
 /*
-	Flash 分为 A、B 区
+	将 Flash 分为 A、B 区
 	B区在前，A区在后
 	B区放 bootloader
 	A区放用户程序
@@ -28,12 +28,19 @@ typedef void(*pf)(void);
 typedef struct
 {
 	uint32_t OAT_FLAG;
+	uint32_t APP_LENS[5];
+	uint8_t	 TARGET_APP;
 } BootFlags, *BootFlagsPtr;
 
 void boot_init(void);
+void boot_fsm(void);
 BootFlags get_boot_flag(void);
 void set_boot_flag(BootFlagsPtr boot_flag);
 void system_reset(void);
 void load_a_section(uint32_t addr);
+
+static void load_app(uint16_t argc, char* argv[]);
+static void boot_fsm_register(void);
+static void jump_to_app(uint16_t argc, char* argv[]);
 
 #endif //BOOT_H
