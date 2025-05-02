@@ -1,6 +1,8 @@
 #ifndef FSM_H
 #define FSM_H
 
+#include <stdint.h>
+
 /*
  * 设计需求
  * 1. 方便添加新的状态和对应执行的任务
@@ -15,8 +17,8 @@ enum FSM_STATE
   	IDLE_STATE,
 	INIT_STATE,
 	OTA_DOWNLOADING,
-	ISP_DOWNLOADING,
-	ISP_FINISH,
+	CMD_LINE,
+	CMD_FINISH,
 	FSM_STATE_NUM
 };
 

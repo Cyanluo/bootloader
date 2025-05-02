@@ -1,22 +1,20 @@
 #include <boot.h>
-#include "retarget.h"
-#include <fsm.h>
-#include <queue.h>
-#include <string.h>
-#include <usart.h>
-#include <usr_sleep.h>
+#include <retarget.h>
+#include <fmc.h>
+
+BootFlags boot_flag;
+AppLoadInfo app_load_info;
 
 void boot_init(void)
 {
 	sector_size_init();
 	at24c02_init();
-	boot_fsm_register();
+	// boot_fsm_register();
+	get_boot_flag();
 }
 
 BootFlags get_boot_flag(void)
 {
-	BootFlags boot_flag = {0};
-
 	at24c02_read_bytes(0, (uint8_t*)&boot_flag, sizeof(boot_flag));
 
 	return boot_flag;
@@ -36,10 +34,12 @@ void MSR_SP(uint32_t sp)
 }
 
 // addr: SECTION_A_START_ADDR
-void load_a_section(uint32_t addr)
+void jump_to_a_section(uint32_t addr)
 {
 	if ( *(uint32_t*)addr < RAM_START_ADDR || *(uint32_t*)addr > RAM_END_ADDR )
 		return;
+
+	system_reset();
 
 	const pf p_a = (pf)(*(uint32_t*)(addr+4));
 
@@ -47,87 +47,28 @@ void load_a_section(uint32_t addr)
 	p_a();
 }
 
-uint8_t isp_wait(void)
+uint8_t load_app_to_a_section(uint8_t app_num)
 {
-	uint16_t time_out = 300;
-	uint16_t len = 0;
+	if ( app_num > (W25Q_SIZE/MAX_APP_SIZE - 1) )
+		return 1;
 
-	while (time_out--)
+	if (boot_flag.APP_LENS[app_num] % 4 != 0)
+		return 2;
+
+	stm32flash_erase_sector(SECTION_A_START_SECTOR, SECTION_A_SECTOR_NUM);
+
+	uint16_t i = 0;
+	for (i=0; i<boot_flag.APP_LENS[app_num]/APP_LOAD_BUFF_SIZE; i++)
 	{
-		DISABLE_INT();
-		len = length(data_queue);
-		ENABLE_INT();
+		w25q128_read(app_num*MAX_APP_SIZE+i*APP_LOAD_BUFF_SIZE, app_load_info.app_load_buff, APP_LOAD_BUFF_SIZE);
+		stm32flash_write(SECTION_A_START_ADDR+i*APP_LOAD_BUFF_SIZE, (uint32_t*)app_load_info.app_load_buff, APP_LOAD_BUFF_SIZE);
+	}
 
-		if (len >= 4)
-		{
-			DISABLE_INT();
-			fetch(data_queue, len, fetch_buffer);
-			ENABLE_INT();
-
-			uint32_t isp_flag;
-			memcpy(&isp_flag, fetch_buffer, 4);
-
-			if (isp_flag == 0x44332211)
-				return 1;
-		}
-
-		msleep(10);
+	if (boot_flag.APP_LENS[app_num]%APP_LOAD_BUFF_SIZE != 0)
+	{
+		w25q128_read(app_num*MAX_APP_SIZE+i*APP_LOAD_BUFF_SIZE, app_load_info.app_load_buff, boot_flag.APP_LENS[app_num]%APP_LOAD_BUFF_SIZE);
+		stm32flash_write(SECTION_A_START_ADDR+i*APP_LOAD_BUFF_SIZE, (uint32_t*)app_load_info.app_load_buff, boot_flag.APP_LENS[app_num]%APP_LOAD_BUFF_SIZE);
 	}
 
 	return 0;
-}
-
-uint8_t ota_condition(void)
-{
-	BootFlags boot_flag = get_boot_flag();
-
-	return boot_flag.OAT_FLAG == OAT_FLAG_VAL;
-}
-
-void load_app(uint16_t argc, char* argv[])
-{
-	if (argc == 0)
-	{
-		printf("load_isp_app_from_serial_w25q\n");
-		printf("...\n");
-		printf("load_isp_app_from_w25q_to_a_section\n");
-		set_state(ISP_FINISH);
-	}
-	else if (argc == 1)
-	{
-		printf("load_ota_app_from_w25q_to_a_section\n");
-		set_boot_flag(0);
-	}
-}
-
-void jump_to_app(uint16_t argc, char* argv[])
-{
-	printf("jump_to_app\n");
-	system_reset();
-	load_a_section(SECTION_A_START_ADDR);
-}
-
-void boot_fsm_register(void)
-{
-	FSM_State_Convert state_convert;
-
-	state_convert.pre_state = INIT_STATE;
-	state_convert.condition = isp_wait;
-	state_convert.state = ISP_DOWNLOADING;
-	state_convert.argc = 0;
-	state_convert.action = load_app;
-	state_convert.r_state = ISP_FINISH;
-	state_convert.r_action = nop_action;
-
-	add_fsm_state(&state_convert);
-
-	state_convert.pre_state = ISP_FINISH;
-	state_convert.condition = ota_condition;
-	state_convert.state = ISP_FINISH;
-	state_convert.argc = 1;
-	state_convert.action = load_app;
-	state_convert.r_state = ISP_FINISH;
-	state_convert.r_action = jump_to_app;
-
-	add_fsm_state(&state_convert);
 }

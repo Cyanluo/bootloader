@@ -41,9 +41,9 @@ void w25q128_sector_erase(uint32_t sector)
 	uint8_t cmd[4] = {0};
 
 	cmd[0] = 0x20;
-	cmd[1] = (sector * 4096) >> 16;
-	cmd[2] = (sector * 4096) >> 8;
-	cmd[3] = (sector * 4096);
+	cmd[1] = (sector * W25Q_SECTOR_SIZE) >> 16;
+	cmd[2] = (sector * W25Q_SECTOR_SIZE) >> 8;
+	cmd[3] = (sector * W25Q_SECTOR_SIZE);
 
 	w25q128_busy();
 	w25q128_write_enable();
@@ -58,16 +58,16 @@ void w25q128_write_page(uint32_t page, uint8_t* data)
 	uint8_t cmd[4] = {0};
 
 	cmd[0] = 0x02;
-	cmd[1] = (page * 256) >> 16;
-	cmd[2] = (page * 256) >> 8;
-	cmd[3] = (page * 256);
+	cmd[1] = (page * W25Q_PAGE_SIZE) >> 16;
+	cmd[2] = (page * W25Q_PAGE_SIZE) >> 8;
+	cmd[3] = (page * W25Q_PAGE_SIZE);
 
 	w25q128_busy();
 	w25q128_write_enable();
 
 	CS_LOW();
 	HAL_SPI_Transmit(&spi1, cmd, 4, 2000);
-	HAL_SPI_Transmit(&spi1, data, 256, 4000);
+	HAL_SPI_Transmit(&spi1, data, W25Q_PAGE_SIZE, 4000);
 	CS_HIGH();
 }
 

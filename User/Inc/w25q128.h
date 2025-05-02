@@ -3,6 +3,10 @@
 
 #include <stdint.h>
 
+#define  W25Q_SIZE			(16*1024*1024)	// Byte
+#define  W25Q_PAGE_SIZE		256				// Byte
+#define  W25Q_SECTOR_SIZE   4096			// Byte
+
 #define CS_HIGH()	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET)
 #define CS_LOW()	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET)
 
