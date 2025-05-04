@@ -1,5 +1,6 @@
 #include <usart.h>
 #include <led.h>
+#include <usr_sleep.h>
 
 UART_HandleTypeDef huart1;
 uint8_t fetch_buffer[2048];
@@ -158,4 +159,61 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 	if (huart->Instance == USART1)
 	{
 	}
+}
+
+/**
+  *  @param size 等于0表示获取到任意大小的数据都都成功，否则表示获取 size 大小数据
+  *  @retval 失败返回0，成功返回获取到的字节数
+ */
+uint8_t recv_target_len(const uint16_t size, uint8_t *buffer)
+{
+	uint8_t ret = 0;
+
+	DISABLE_INT();
+	const uint16_t len = length(data_queue);
+	ENABLE_INT();
+
+	if ( (size==0 && len>0) || (len>=size) )
+	{
+		DISABLE_INT();
+		if (size == 0)
+			fetch(data_queue, len, buffer);
+		else
+			fetch(data_queue, size, buffer);
+		ENABLE_INT();
+
+		ret = size == 0 ? len : size;
+	}
+
+	return ret;
+}
+
+/**
+  * @param timeout unit: second
+  */
+uint8_t recv_target_msg(const uint8_t* target, uint8_t size, uint16_t timeout)
+{
+	if (size == 0)
+		return 0;
+
+	timeout *= 100;
+
+	while (timeout--)
+	{
+		if (recv_target_len(size, fetch_buffer) == size)
+		{
+			uint8_t i = 0;
+			for (i = 0; i < size; i++)
+			{
+				if (fetch_buffer[i] != target[i])
+					break;
+			}
+
+			return i == size ? 0 : 1;
+		}
+
+		msleep(10);
+	}
+
+	return 2;
 }

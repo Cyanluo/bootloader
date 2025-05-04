@@ -9,7 +9,6 @@ void boot_init(void)
 {
 	sector_size_init();
 	at24c02_init();
-	// boot_fsm_register();
 	get_boot_flag();
 }
 

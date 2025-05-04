@@ -1,10 +1,6 @@
 #ifndef __USART_H__
 #define __USART_H__
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <main.h>
 #include <queue.h>
 
@@ -17,9 +13,7 @@ extern DMA_HandleTypeDef hdma_usart1_tx;
 
 void uart1_init(void);
 void uart1_de_init(void);
-
-#ifdef __cplusplus
-}
-#endif
+uint8_t recv_target_len(const uint16_t size, uint8_t *buffer);
+uint8_t recv_target_msg(const uint8_t* target, uint8_t size, uint16_t timeout);
 
 #endif /* __USART_H__ */

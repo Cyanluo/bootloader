@@ -7,7 +7,6 @@
 #include <usr_sleep.h>
 #include <boot.h>
 #include <w25q128.h>
-#include <fsm.h>
 
 int main(void)
 {
@@ -19,7 +18,6 @@ int main(void)
     SystemClock_Config();
     init_fac_us();
 
-    fsm_init();
     led_init();
     uart1_init();
     RetargetInit(&huart1);
