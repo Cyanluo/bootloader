@@ -5,11 +5,10 @@
 #include <fmc.h>
 #include <w25q128.h>
 
-/*
-	将 Flash 分为 A、B 区
-	B区在前，A区在后
-	B区放 bootloader
-	A区放用户程序
+/**
+  * Area B is in front, area A is in the back
+  * Area B is for bootloader
+  * Area A is for user program
 */
 
 #define SECTION_B_START_SECTOR		0
@@ -26,13 +25,19 @@
 
 #define MAX_APP_SIZE		(64*1024)		// Byte
 #define APP_LOAD_BUFF_SIZE	512				// Byte
+#define MAX_APP_NUM			9
+#define APP_SECTOR_NUM		(MAX_APP_SIZE/W25Q_SECTOR_SIZE)
+#define APP_PAGE_NUM		(MAX_APP_SIZE/W25Q_PAGE_SIZE)
+
+#define VERSION_FORMAT	"VER-v%d.%d.%d-%d.%d.%d-%d.%d.%d"	 // "VER-v0.0.1-2025.5.01-12.12.12"
 
 typedef void(*pf)(void);
 
 typedef struct
 {
 	uint32_t OAT_FLAG;
-	uint32_t APP_LENS[W25Q_SIZE/MAX_APP_SIZE];  // max 64k per app
+	uint32_t APP_LENS[MAX_APP_NUM];  // max 64k per app
+	uint8_t  VERSION[40];
 } BootFlags, *BootFlagsPtr;
 
 typedef struct
@@ -43,6 +48,12 @@ typedef struct
 
 extern BootFlags	boot_flag;
 extern AppLoadInfo	app_load_info;
+
+typedef struct
+{
+	void (*task)(void);
+	const char *description;
+} cmd_task_item;
 
 void boot_init(void);
 void boot_fsm(void);

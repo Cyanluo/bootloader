@@ -10,6 +10,7 @@ void boot_init(void)
 	sector_size_init();
 	at24c02_init();
 	get_boot_flag();
+	w25q128_init();
 }
 
 BootFlags get_boot_flag(void)
@@ -48,7 +49,7 @@ void jump_to_a_section(uint32_t addr)
 
 uint8_t load_app_to_a_section(uint8_t app_num)
 {
-	if ( app_num > (W25Q_SIZE/MAX_APP_SIZE - 1) )
+	if ( app_num > (MAX_APP_NUM - 1) )
 		return 1;
 
 	if (boot_flag.APP_LENS[app_num] % 4 != 0)
